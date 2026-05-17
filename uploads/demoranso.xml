@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Events>
+
+<!-- High Process Creation -->
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+
+<!-- Heavy DLL Loading -->
+<Event><System><EventID>7</EventID></System></Event>
+<Event><System><EventID>7</EventID></System></Event>
+<Event><System><EventID>7</EventID></System></Event>
+<Event><System><EventID>7</EventID></System></Event>
+<Event><System><EventID>7</EventID></System></Event>
+<Event><System><EventID>7</EventID></System></Event>
+
+<!-- Massive Handle Access -->
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+
+<!-- Network Connections -->
+<Event><System><EventID>3</EventID></System></Event>
+<Event><System><EventID>3</EventID></System></Event>
+<Event><System><EventID>3</EventID></System></Event>
+<Event><System><EventID>3</EventID></System></Event>
+
+<!-- File Creation (Encryption Simulation) -->
+<Event><System><EventID>11</EventID></System></Event>
+<Event><System><EventID>11</EventID></System></Event>
+<Event><System><EventID>11</EventID></System></Event>
+<Event><System><EventID>11</EventID></System></Event>
+<Event><System><EventID>11</EventID></System></Event>
+
+<!-- Registry Changes -->
+<Event><System><EventID>13</EventID></System></Event>
+<Event><System><EventID>13</EventID></System></Event>
+<Event><System><EventID>13</EventID></System></Event>
+
+<!-- EXTRA INTENSE ACTIVITY -->
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>10</EventID></System></Event>
+<Event><System><EventID>3</EventID></System></Event>
+<Event><System><EventID>7</EventID></System></Event>
+
+</Events>

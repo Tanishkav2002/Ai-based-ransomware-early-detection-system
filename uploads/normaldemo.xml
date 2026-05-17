@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Events>
+
+<!-- Process Creation (normal usage) -->
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+<Event><System><EventID>1</EventID></System></Event>
+
+<!-- DLL Load (normal apps) -->
+<Event><System><EventID>7</EventID></System></Event>
+
+<!-- VERY LOW Handle Access (important fix) -->
+<Event><System><EventID>10</EventID></System></Event>
+
+<!-- Minimal Network -->
+<Event><System><EventID>3</EventID></System></Event>
+
+<!-- File Activity -->
+<Event><System><EventID>11</EventID></System></Event>
+<Event><System><EventID>11</EventID></System></Event>
+
+<!-- Registry -->
+<Event><System><EventID>13</EventID></System></Event>
+
+</Events>
