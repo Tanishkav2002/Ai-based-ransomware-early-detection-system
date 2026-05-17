@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ransomware Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0f2c;
+            color: white;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ---- SIDEBAR ---- */
+        .sidebar {
+            width: 220px;
+            background: #0d1333;
+            height: 100vh;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar h2 {
+            color: #ff4d6d;
+            margin: 0 0 30px 0;
+        }
+
+        .menu div {
+            padding: 12px 16px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            user-select: none;
+        }
+
+        .menu div:hover  { background: #1f2a60; }
+        .menu div.active { background: #ff4d6d22; border-left: 3px solid #ff4d6d; }
+
+        /* ---- MAIN ---- */
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+
+        /* ---- PAGES ---- */
+        .page { display: none; }
+        .page.active { display: block; }
+
+        /* ---- CARDS ---- */
+        .cards { display: flex; gap: 20px; flex-wrap: wrap; }
+
+        .card {
+            flex: 1;
+            min-width: 160px;
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1c2b5a, #2c3e75);
+        }
+
+        .card h3 { margin: 0 0 8px 0; font-size: 14px; color: #aab4d4; }
+        .card p  { margin: 0; font-size: 28px; font-weight: bold; }
+
+        /* ---- SCAN BOX ---- */
+        .scan-box {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 15px;
+            background: #111a4d;
+            text-align: center;
+        }
+
+        .scan-box input[type="file"] { color: white; }
+
+        button {
+            padding: 10px 24px;
+            background: #ff4d6d;
+            border: none;
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: opacity 0.2s;
+        }
+
+        button:hover { opacity: 0.85; }
+
+        .spinner {
+            display: none;
+            margin: 16px auto 0;
+            width: 36px; height: 36px;
+            border: 4px solid #2c3e75;
+            border-top-color: #ff4d6d;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .result {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .safe   { color: #00ff9c; }
+        .danger { color: #ff4d6d; }
+
+        /* ---- FEATURE TABLE ---- */
+        .feature-card {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1c2b5a, #2c3e75);
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        td    { padding: 7px 10px; border-bottom: 1px solid #1f2a60; font-size: 14px; }
+        td:first-child { color: #aab4d4; }
+
+        /* ---- CHART ---- */
+        .chart-card {
+            margin-top: 24px;
+            padding: 20px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #1c2b5a, #2c3e75);
+        }
+
+        /* ---- REPORTS ---- */
+        .report-table td, .report-table th { padding: 10px; text-align: left; }
+        .report-table th { color: #aab4d4; font-size: 13px; border-bottom: 2px solid #1f2a60; }
+
+        /* ---- SETTINGS ---- */
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #1f2a60;
+        }
+
+        .setting-row label { color: #aab4d4; font-size: 14px; }
+
+        .toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #1f2a60;
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+
+        .slider:before {
+            content: "";
+            position: absolute;
+            width: 18px; height: 18px;
+            left: 3px; bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .slider { background: #ff4d6d; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        select {
+            background: #1f2a60;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>🛡️ Ransomware</h2>
+    <div class="menu">
+        <div class="active" onclick="navigate('dashboard', this)">📊 Dashboard</div>
+        <div onclick="navigate('scan', this)">🔍 Scan System</div>
+        <div onclick="navigate('reports', this)">📋 Reports</div>
+        <div onclick="navigate('settings', this)">⚙️ Settings</div>
+    </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+    <!-- ========== DASHBOARD ========== -->
+    <div id="page-dashboard" class="page active">
+        <h1>System Protection, <span style="color:#ff4d6d;">Powered by AI</span></h1>
+
+        <div class="cards">
+            <div class="card">
+                <h3>Files Scanned</h3>
+                <p>{{ files_scanned if files_scanned else 0 }}</p>
+            </div>
+            <div class="card">
+                <h3>Safe Files</h3>
+                <p>{{ safe_files if safe_files else 0 }}</p>
+            </div>
+            <div class="card">
+                <h3>Threats Detected</h3>
+                <p style="color:#ff4d6d;">{{ threats_detected if threats_detected else 0 }}</p>
+            </div>
+            <div class="card">
+                <h3>Accuracy</h3>
+                <p>
+                    {% if accuracy and accuracy != '--' %}
+                        {{ accuracy }}%
+                    {% else %}
+                        --
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div style="margin-top:30px; padding:20px; border-radius:12px; background:#111a4d;">
+            <h3 style="margin:0 0 10px 0; color:#aab4d4;">Quick Overview</h3>
+            <p style="color:#aab4d4; font-size:14px; margin:0;">
+                Go to <strong style="color:white;">Scan System</strong> to upload a Sysmon XML log
+                and get an instant AI-powered ransomware verdict using an ensemble of
+                Random Forest, XGBoost, and Isolation Forest models.
+            </p>
+        </div>
+
+        <div style="margin-top:20px; padding:20px; border-radius:12px; background:#111a4d;">
+            <h3 style="margin:0 0 10px 0; color:#aab4d4;">Detection Method</h3>
+            <table>
+                <tr><td>🌲 Random Forest</td><td style="color:#00ff9c;">Active</td></tr>
+                <tr><td>⚡ XGBoost</td><td style="color:#00ff9c;">Active</td></tr>
+                <tr><td>🔵 Isolation Forest</td><td style="color:#00ff9c;">Active</td></tr>
+                <tr><td>🧠 Behavioral Scoring</td><td style="color:#00ff9c;">Active</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ========== SCAN ========== -->
+    <div id="page-scan" class="page">
+        <h1>Scan System</h1>
+
+        <div class="scan-box">
+            <p style="color:#aab4d4; margin-top:0;">Upload a Sysmon XML event log to analyse</p>
+
+            <form method="POST" enctype="multipart/form-data" onsubmit="showSpinner()">
+                <input type="file" name="file" accept=".xml" required>
+                <br><br>
+                <button type="submit">🔍 Scan File</button>
+            </form>
+
+            <div class="spinner" id="spinner"></div>
+
+            {% if result %}
+            <div class="result">
+                Result:
+                <span class="{{ 'danger' if result == 'RANSOMWARE' else 'safe' }}">
+                    {% if result == 'RANSOMWARE' %}⚠️ RANSOMWARE{% else %}✅ BENIGN{% endif %}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if features %}
+        <div class="feature-card">
+            <h3>Extracted Features</h3>
+            <table>
+                {% for key, value in features.items() %}
+                <tr>
+                    <td>{{ key }}</td>
+                    <td>
+                        {% if value is float %}
+                            {{ "%.4f" | format(value) }}
+                        {% else %}
+                            {{ value }}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        {% endif %}
+
+        {% if importance %}
+        <div class="chart-card">
+            <h3>Feature Importance </h3>
+            <canvas id="chart"></canvas>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ========== REPORTS ========== -->
+    <div id="page-reports" class="page">
+        <h1>Reports</h1>
+
+        <div class="feature-card">
+            <h3>Session Summary</h3>
+            <table class="report-table">
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Files Scanned (this session)</td>
+                    <td>{{ files_scanned if files_scanned else 0 }}</td>
+                </tr>
+                <tr>
+                    <td>Safe Files</td>
+                    <td style="color:#00ff9c;">{{ safe_files if safe_files else 0 }}</td>
+                </tr>
+                <tr>
+                    <td>Threats Detected</td>
+                    <td style="color:#ff4d6d;">{{ threats_detected if threats_detected else 0 }}</td>
+                </tr>
+                <tr>
+                    <td>Detection Accuracy</td>
+                    <td>
+                        {% if accuracy and accuracy != '--' %}
+                            {{ accuracy }}%
+                        {% else %}
+                            N/A (scan a file first)
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="feature-card" style="margin-top:20px;">
+            <p style="color:#aab4d4; font-size:14px; margin:0;">
+                ℹ️ Stats are session-based and reset on server restart.
+                Integrate SQLite for persistent scan history.
+            </p>
+        </div>
+    </div>
+
+    <!-- ========== SETTINGS ========== -->
+    <div id="page-settings" class="page">
+        <h1>Settings</h1>
+
+        <div class="feature-card">
+
+
+            <div class="setting-row">
+                <div>
+                    <div>Auto-quarantine on Detection</div>
+                    <label>Isolate flagged files automatically</label>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox">
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div>Voting Threshold</div>
+                    <label>Minimum votes to classify as RANSOMWARE</label>
+                </div>
+                <select>
+                    <option value="2">2 votes</option>
+                    <option value="3" selected>3 votes</option>
+                    <option value="4">4 votes</option>
+                </select>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div>Behavioral Scoring</div>
+                    <label>Use heuristic scoring alongside ML models</label>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+
+            <div class="setting-row">
+                <div>
+                    <div>Models in Use</div>
+                    <label>Ensemble: Random Forest + XGBoost + Isolation Forest</label>
+                </div>
+                <span style="color:#00ff9c; font-size:13px;">● Active</span>
+            </div>
+
+        </div>
+
+        <div style="margin-top:16px;">
+            <p style="color:#aab4d4; font-size:13px;">
+                ⚠️ Toggles are UI-only. Wire them to Flask session/config to make them functional.
+            </p>
+        </div>
+    </div>
+
+</div><!-- end .main -->
+
+<script>
+// ---- Sidebar navigation ----
+function navigate(page, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.menu div').forEach(d => d.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    el.classList.add('active');
+}
+
+// ---- Spinner on form submit ----
+function showSpinner() {
+    document.getElementById('spinner').style.display = 'block';
+}
+
+// ---- Auto-open Scan tab after POST result ----
+{% if result %}
+document.addEventListener('DOMContentLoaded', function () {
+    const scanItem = document.querySelector('.menu div:nth-child(2)');
+    navigate('scan', scanItem);
+});
+{% endif %}
+
+// ---- Feature importance chart ----
+{% if importance %}
+const labels = {{ importance.keys() | list | tojson }};
+const data   = {{ importance.values() | list | tojson }};
+
+new Chart(document.getElementById('chart'), {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Importance',
+            data: data,
+            backgroundColor: '#ff4d6d',
+            borderRadius: 4,
+        }]
+    },
+    options: {
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+            x: { ticks: { color: '#aab4d4' }, grid: { color: '#1f2a60' } },
+            y: { ticks: { color: '#aab4d4' }, grid: { color: '#1f2a60' } }
+        }
+    }
+});
+{% endif %}
+</script>
+
+</body>
+</html>
